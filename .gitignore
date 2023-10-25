@@ -1,2 +1,6 @@
 # Ignore Mac system files
 .DS_store
+
+# Ignore the data files because these will be downloaded manually rather than committed through
+# source control.
+data/

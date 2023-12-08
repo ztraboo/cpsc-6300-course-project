@@ -83,7 +83,7 @@
     % logo
     \includegraphics[width=0.5\textwidth]{figures/SoC-CU-Orange-and-Purple.png}~\\[2cm]
 
-    \textsc{\Large CPSC 4300/6300 \\ Applied Data Science \\ Fall 2023}\\[1cm]
+    \textsc{\Large CPSC 6300 \\ Applied Data Science \\ Fall 2023}\\[1cm]
 
 
     \HRule \\[0.4cm]
@@ -105,7 +105,7 @@
   \end{center}
 \end{titlepage}
 
-\lhead{CPSC 4300/6300}
+\lhead{CPSC 6300}
 \chead{Becker, Croft, Trabookis}
 \rhead{\today}
  
@@ -125,7 +125,7 @@ A research article titled \textit{Quantifying the Invisible Labor in Crowd Work}
 
 The plugin includes a "background process that detects the different browser events that happen on MTurk (e.g., that the worker visited another page on MTurk, or that she started typing, or began a new HIT). The page crawler detects the current MTurk domain page that the worker is on, as well as the status of the page (e.g., that the page is loaded, active, inactive, or closed). The background process focuses on detecting the human intelligence tasks (HITs) that the worker is currently doing and identifying which she has finished. In order to accomplish this, the background process polls workers’ task queues on MTurk every 30 seconds. From the task queue, the background process obtains the metadata and status of all the HITs the worker has accepted to do. Notice that the page crawler is the primary element that we use to detect whether the worker is completing paid labor or invisible labor. The background process helps our plugin to be able to better detect when the worker is completing HITs." \cite[p.~5]{toxtli2021}
 
-The datasets that we are examining are from Amazon Mechanical Turk (MTurk) and Toloka Yandex. They observe individuals and the actions they perform while working tasks, storing them as individual events, on their respective platforms. Combined they consist of 302 unique individuals contributing 12,401,997 individual actions/events towards this dataset. There is over 4 days worth of information in the MTurk dataset; whereas, Toloka has over 43 days worth of information. Both datasets have 10 columns worth of quantitative and numerical data which includes event id’s, page urls, page actions, API calls, task status, epoch timestamp, working status, person id, and two other columns that contain unusable data. Our next step was to condense our dataset and to make new columns that contained more relevant data to our problem, especially since the API calls had a bunch of useful information in the API json request. 
+The datasets that we are examining are from Amazon Mechanical Turk (MTurk) and Toloka Yandex. Due to time constraints, we only used the MTurk dataset in our model predictions. They observe individuals and the actions they perform while working tasks, storing them as individual events, on their respective platforms. Combined they consist of 302 unique individuals contributing 12,401,997 individual actions/events towards this dataset. There is over 4 days worth of information in the MTurk dataset; whereas, Toloka has over 43 days worth of information. Both datasets have 10 columns worth of quantitative and numerical data which includes event id’s, page urls, page actions, API calls, task status, epoch timestamp, working status, person id, and two other columns that contain unusable data. Our next step was to condense our dataset and to make new columns that contained more relevant data to our problem, especially since the API calls had a bunch of useful information in the API json request. 
 
 \end{multicols}
 
@@ -186,11 +186,11 @@ The dataset did not include column names and no description was provided. After 
 \subsection{Data Processing and Cleaning}
 The original MTurk dataset was generated from a Turkenator Chrome Extension (plugin) that was modified to collect information necessary to report on working and invisible labor events. We noticed that the events included \codeword{(user\_id, task\_id)} fields that we could leverage to group events together for our final feature set; designated values \codeword{(ADDED\_TASK, FINISHED\_TASK)} from a subtype event field provided ranges for start/stop for a given task. We had to filter out tasks that did not include both an \codeword{(ADDED\_TASK, FINISHED\_TASK)} entries as this would show incomplete information. An event timecode field was provided in milliseconds which needed to be converted to a datetime format to easily identify when an event occurred; this field was important for sorting events in a chronological order of occurrence and was necessary when aggregating the duration and count totals correctly. Flattening of an event details JSON field was needed to retrieve additional data fields \codeword{(task\_id, requester\_name\_company, assignment\_duration\_seconds, \\project.assignable\_hit\_counts, project.monetary\_reward\_in\_dollars)}. We calculated new fields for our feature set to include total, working, and invisible labor count and duration in seconds; adjusted monetary reward in dollars from the working + invisible labor; completed\_task (yes/no). Processing and cleaning this data was not easy because it relied upon internal knowledge about how this data was collected through the Chrome plugin, and also figuring out how to best group individual event recordings for a task was a challenge because we had to figure out when they started and stopped.
 
-$$\textbf{Task Pay Rate (dollars)} = \frac{\text{Task Monetary Reward (dollars)}}{\text{Task Estimate Duration (seconds)}}$$
-
-\begin{multline*}
-\textbf{Adjusted Monetary Reward (dollars)} = \text{Task Monetary Reward (dollars)} \\ + \text{Task Pay Rate (dollars)} \times \\ (\text{Working Labor Duration (seconds)} + \text{Invisible Labor Duration (seconds)})
-\end{multline*}
+%$$\textbf{Task Pay Rate (dollars)} = \frac{\text{Task Monetary Reward (dollars)}}{\text{Task Estimate Duration (seconds)}}$$
+%
+%\begin{multline*}
+%\textbf{Adjusted Monetary Reward (dollars)} = \text{Task Monetary Reward (dollars)} \\ + \text{Task Pay Rate (dollars)} \times \\ (\text{Working Labor Duration (seconds)} + \text{Invisible Labor Duration (seconds)})
+%\end{multline*}
 
 \subsection{Data Visualization \& Key Predictors}
 The projected model that will use this dataset will be constructed to predict the completion status of a task, given selected features associated with a task. As described before, completion status is a binary field, where 1 corresponds to a completed task, and 0 corresponds to a task that was never finished. As such, a classification model will be used to determine this discrete outcome with two options. Figure 1 gives a glance at the distribution of completed tasks for a subset of our cleaned, task-grouped dataset.
@@ -199,7 +199,7 @@ Due to lack of familiarity with this type of dataset, an EDA had to be performed
 
 \begin{figure}[hbt!]
   \centering
-  \includegraphics[width=425pt]{figures/distribution-completed-tasks-pie-chart}
+  \includegraphics[width=\linewidth]{figures/distribution-completed-tasks-pie-chart}
   \caption{Distribution of Completed Task Status values.}
 \end{figure}
 
@@ -213,7 +213,7 @@ Due to lack of familiarity with this type of dataset, an EDA had to be performed
 
 \begin{figure}[hbt!]
   \centering
-  \includegraphics[width=420pt]{figures/task-monetary_reward_in_dollars-vs-completed_task-boxplot}
+  \includegraphics[width=420pt]{figures/completed_task-vs-task-monetary_reward_in_dollars-boxplot}
   \caption{Box Plot - Task Monetary Reward for Task Completion Status.}
 \end{figure}
 
@@ -254,13 +254,13 @@ Table 1 shows the accuracy, precision, and recall of the model, where the closer
    \textbf{Evaluation Metric} & \textbf{Value} \\ 
    \hline
    Accuracy & 0.9  \\
-   Precision & 0.8311688311688312  \\
-   Recall & 0.8797250859106529  \\
+   Precision & 0.9377224199288257  \\
+   Recall & 0.9101899827288429  \\
+   F1-Score & 0.9237510955302366 \\   
    \end{tabular}
    \caption{kNN Evaluation Metrics} 
 %   \label{tab:example}
 \end{table}
-
 
 Based on the classification metrics obtained with testing data, 90\% of the time our kNN model appears to correctly identify whether or not a task will be completed. Relatively speaking, this is a pretty good chance of identification, given the confusing, clustered nature of the data shown in the EDA. The lowest classification metric is precision, which means that the model has the highest rate of error when it makes a positive classification prediction. Nonetheless, this is still greater than 80\%, which is still significant, given the density of the plots of the dataset's features. Overall, for an initial model, it does a fairly adequate job of fitting the data and correctly classifying unseen data.
 %\end{multicols}
@@ -287,27 +287,27 @@ The model includes different types of kernels (algorithms that determine the sim
    \hline
    linear & Test data score & 0.7310344827586207  \\
           & Accuracy & 0.8367816091954023  \\
-          & Precision & 0.8387602385762796 \\
-          & Recall & 0.8367816091954023  \\
-          & F1-Score & 0.8290497749406808  \\
+          & Precision & 0.8315629742033384 \\
+          & Recall & 0.9464594127806563  \\
+          & F1-Score & 0.8852988691437802  \\
    \hline
    sigmoid & Test data score & 0.2574712643678161  \\
           & Accuracy & 0.7977011494252874  \\
-          & Precision & 0.7973612554090772 \\
-          & Recall & 0.7977011494252874  \\
-          & F1-Score & 0.7975267538644472  \\
+          & Precision & 0.846815834767642 \\
+          & Recall & 0.8497409326424871  \\
+          & F1-Score & 0.8482758620689657  \\
    \hline   
    rbf & Test data score & 0.6540229885057471  \\
           & Accuracy & 0.8793103448275862  \\
-          & Precision & 0.88169672976012 \\
-          & Recall & 0.8793103448275862  \\
-          & F1-Score & 0.8752647360816025  \\
+          & Precision & 0.8703125 \\
+          & Recall & 0.9620034542314335  \\
+          & F1-Score & 0.9138638228055783  \\
    \hline   
    poly & Test data score & 0.7448275862068966  \\
           & Accuracy & 0.8574712643678161  \\
-          & Precision & 0.8667436874634088 \\
-          & Recall & 0.8574712643678161  \\
-          & F1-Score & 0.8490946311791467  \\
+          & Precision & 0.8380386329866271 \\
+          & Recall & 0.9740932642487047  \\
+          & F1-Score & 0.9009584664536741  \\
    \hline
    \end{tabular}
    \caption{SVM Kernels and Evaluation Metrics.} 
@@ -319,7 +319,7 @@ Another way that we can evaluate our SVM classification model on unseen data is 
 
 The main purpose of cross-validation is to help prevent overfitting of the trained subset data to the model. New unseen data from our validation set could perform poorly on the model producing invalid predictions if the trained subset fit too well to the model. Good results from cross-validation will ensure that the model is robust and generalizes well to new data. \cite{geekforgeeks2023}
 
-Testing with our SVM model we chose a 30\% validation set and 70\% training subset; having a higher percentage for the training subset will ensure that our input bias is minimized as this will include more relevant input features needed to create a more robust model. Table 3 shows K-Fold cross validation metrics where the mean accuracy of the model gets better (closer to 1) at 4 or 5 folds. With the SVM model with kernel=’rbf’ and the one pass train/test split, we generated an accuracy of 0.879 which is better than the 4 or 5 fold results but they are similar to show that the model is robust. Setting K-Folds higher than 5, we didn’t notice the mean accuracy change much.
+Testing with our SVM model we chose a 30\% validation set and 70\% training subset; having a higher percentage for the training subset will ensure that our input bias is minimized as this will include more relevant input features needed to create a more robust model. Table 3 shows K-Fold cross validation metrics where the mean accuracy of the model gets better (closer to 1) at 4 or 5 folds. With the SVM model with kernel=’rbf’ and the one pass train/test split, we generated an accuracy of 0.879 which is better than the 4 fold results but they are similar to show that the model is robust. Setting K-Folds higher than 5, we didn’t notice the mean accuracy change much.
 
 %\end{multicols}
 
@@ -336,10 +336,10 @@ Testing with our SVM model we chose a 30\% validation set and 70\% training subs
    \hline
    \textbf{N-Folds} & \textbf{Scores} & \textbf{Evaluation Metrics} \\ 
    \hline
-   2 & \multicolumn{1}{l}{[0.64 0.82]} & 0.73 accuracy with a standard deviation of 0.09 \\
-   3 & \multicolumn{1}{l}{[0.42 0.92 0.79]} & 0.71 accuracy with a standard deviation of 0.21 \\
-   4 & \multicolumn{1}{l}{[0.64 0.92 0.88 0.79]} & 0.81 accuracy with a standard deviation of 0.11 \\
-   5 & \multicolumn{1}{l}{[0.60 0.87 0.89 0.86 0.80]} & 0.80 accuracy with a standard deviation of 0.11 \\
+   2 & \multicolumn{1}{l}{[0.73 0.67]} & 0.70 accuracy with a standard deviation of 0.03 \\
+   3 & \multicolumn{1}{l}{[0.68 0.76 0.69]} & 0.71 accuracy with a standard deviation of 0.03 \\
+   4 & \multicolumn{1}{l}{[0.67 0.81 0.71 0.69]} & 0.72 accuracy with a standard deviation of 0.05 \\
+   5 & \multicolumn{1}{l}{[0.67 0.76 0.74 0.71 0.69]} & 0.72 accuracy with a standard deviation of 0.04 \\
    \hline
    \end{tabular}
    \caption{K-Fold Cross Validation Metrics.} 
@@ -360,40 +360,169 @@ We evaluated each model (kNN and SVM) to see which one predicted the 'completed\
 \pagebreak
 
 \subsection{Predictions for Cases of Interest}
-With cases of interest, we were interested to see how the SVM model would predict 3 new cases of interest based on the following variables: high monetary reward, high assignable HIT counts, and a high labor event count. These are the results we found when examining it.
+With cases of interest, we were interested to see how the kNN model would predict 3 new cases of interest based on the following variables: high monetary reward, high assignable HIT counts, and a high labor event count. These are the results we found when examining it.
 
 \subsubsection{Case 1: High Monetary Reward}
-We can see a high amount of monetary rewards (in dollars) offered, along with a low amount of assignable hits and 158 total labor events that occurred within this case. As we can see this task was completed, which our model correctly predicted.
+The input feature of a higher monetary reward value (\$0.50) compared to our other cases we examined. This case also examined the other two input features of 0 assignable HIT’s along with a total labor event count occurrence of 53. With these features, the person \underline{completed a task} along these parameters.
 
-\begin{lstlisting}[language=Python, caption=Case 1 - Feature input and 'completed\_task' ouptut.]
+% caption=Case 1 - Feature input and 'completed\_task' ouptut.
+\begin{lstlisting}[language=Python]
 # ['task.monetary_reward_in_dollars', 'task.assignable_hits_count', 'total.labor.event_count']
-case1 = [0.65, 0.0, 158]
+case1 = [0.50, 0.0, 53]
 case1Result = [1]
 \end{lstlisting}
 
 \includegraphics[width=0.35\textwidth, center]{figures/case-1-model-prediction}
 
-\subsubsection{Case 2: High Assignable Hits Count}
-We can see a high amount of assignable hits count offered, along with \$0.08 of monetary reward and 234 total labor events that occurred within this case. As we can see this task was completed, which our model correctly predicted.
+\begin{table}[hbt!]
+   \small
+   \centering
+   \begin{tabular}{lccr}
+   \hline
+   \textbf{Field} & \textbf{Value} \\
+   \hline
+   platform.name & MTURK \\
+   user.id & 2cd3cfa492db635891e3ea3b402982 \\
+   task.id & 3511RHPAEZ3KAEZLZMMOUADXY2TLRJ \\
+   task.monetary\_reward\_in\_dollars & 0.5 \\
+   task.assignable\_hits\_count & 0 \\
+   task.requester\_name & Amna Kirmani \\
+   task.estimate\_duration\_in\_seconds & 3000 \\
+   total.labor.event\_count & 53 \\
+   total.labor.duration\_in\_seconds & 570 \\
+   working.labor.event\_count & 32 \\
+   working.labor.duration\_in\_seconds & 444 \\
+   invisible.labor.event\_count & 21 \\
+   invisible.labor.duration\_in\_seconds & 126 \\
+   adjusted.monetary\_reward\_in\_dollars & 0.595 \\
+   completed\_task & 1 \\
+   \hline
+   \end{tabular}
+   \caption{Case 1 - Feature Values} 
+%   \label{tab:example}
+\end{table}
 
-\begin{lstlisting}[language=Python, caption=Case 2 - Feature input and 'completed\_task' ouptut.]
+%\pagebreak
+
+\subsubsection{Case 2: High Assignable Hits Count}
+The input feature of an extremely high amount of assignable HIT’s (3704) compared to other cases we examined. This case also examined the other two input features of \$0.15 monetary reward along with a total labor event count occurrence of 99. With these features, the person \underline{completed a task} along these parameters.
+
+% caption=Case 2 - Feature input and 'completed\_task' ouptut.
+\begin{lstlisting}[language=Python]
 # ['task.monetary_reward_in_dollars', 'task.assignable_hits_count', 'total.labor.event_count']
-case1 = [0.08, 5083.0, 234]
+case2 = [0.15, 3704.0, 99]
 case1Result = [1]
 \end{lstlisting}
 
 \includegraphics[width=0.35\textwidth, center]{figures/case-2-model-prediction}
 
-\subsubsection{Case 3: High Total Labor Event Count}
-We can see a high amount of total labor events occur, along with 0.0 amount of assignable hits and 705 total labor events. As we can see this task was not completed, which our model correctly predicted.
+\begin{table}[hbt!]
+   \small
+   \centering
+   \begin{tabular}{lccr}
+   \hline
+   \textbf{Field} & \textbf{Value} \\
+   \hline
+   platform.name & MTURK \\
+   user.id & 112a14c770ec5b7f907fd95b5c13c \\
+   task.id & 33QQ60S6ASQOWK90F4ZRAMMMVCCU0Q \\
+   task.monetary\_reward\_in\_dollars & 0.15		 \\
+   task.assignable\_hits\_count & 3704 \\
+   task.requester\_name & Anita \\
+   task.estimate\_duration\_in\_seconds & 3600 \\
+   total.labor.event\_count & 99 \\
+   total.labor.duration\_in\_seconds & 244 \\
+   working.labor.event\_count & 91 \\
+   working.labor.duration\_in\_seconds & 214 \\
+   invisible.labor.event\_count & 8 \\
+   invisible.labor.duration\_in\_seconds & 30 \\
+   adjusted.monetary\_reward\_in\_dollars & 0.16016666666666665 \\
+   completed\_task & 1 \\
+   \hline
+   \end{tabular}
+   \caption{Case 2 - Feature Values} 
+%   \label{tab:example}
+\end{table}
 
-\begin{lstlisting}[language=Python, caption=Case 3 - Feature input and 'completed\_task' ouptut.]
+%\pagebreak
+
+\subsubsection{Case 3: High Total Labor Event Count}
+The input feature of an extremely high amount of total labor events with it having 581 total labor events. This was exceptionally high compared to other cases we examined. This case also examined the other two input features of \$0.04 monetary reward along with a assignable hit count of 2. With these features, the person \underline{did not complete a task} along these parameters.
+
+% caption=Case 3 - Feature input and 'completed\_task' ouptut.
+\begin{lstlisting}[language=Python]
 # ['task.monetary_reward_in_dollars', 'task.assignable_hits_count', 'total.labor.event_count']
-case1 = [0.08, 0.0, 705]
+case3 = [0.04, 2.0, 581]
 case1Result = [0]
 \end{lstlisting}
 
 \includegraphics[width=0.35\textwidth, center]{figures/case-3-model-prediction}
+
+\begin{table}[hbt!]
+   \small
+   \centering
+   \begin{tabular}{lccr}
+   \hline
+   \textbf{Field} & \textbf{Value} \\
+   \hline
+   platform.name & MTURK \\
+   user.id & 6c418c234637a262f4b3cc8fbb2ab683 \\
+   task.id & 3D5G8J4N5A5L4PA84QINQ4ILTDPTVA \\
+   task.monetary\_reward\_in\_dollars & 0.04 \\
+   task.assignable\_hits\_count & 2 \\
+   task.requester\_name & Panel \\
+   task.estimate\_duration\_in\_seconds & 7200 \\
+   total.labor.event\_count & 581 \\
+   total.labor.duration\_in\_seconds & 1859 \\
+   working.labor.event\_count & 220 \\
+   working.labor.duration\_in\_seconds & 202 \\
+   invisible.labor.event\_count & 361 \\
+   invisible.labor.duration\_in\_seconds & 1657 \\
+   adjusted.monetary\_reward\_in\_dollars & 0.050327778 \\
+   completed\_task & 0 \\
+   \hline
+   \end{tabular}
+   \caption{Case 3 - Feature Values} 
+%   \label{tab:example}
+\end{table}
+
+% SVN 3 Cases
+
+%\subsection{Predictions for Cases of Interest}
+%With cases of interest, we were interested to see how the SVM model would predict 3 new cases of interest based on the following variables: high monetary reward, high assignable HIT counts, and a high labor event count. These are the results we found when examining it.
+%
+%\subsubsection{Case 1: High Monetary Reward}
+%We can see a high amount of monetary rewards (in dollars) offered, along with a low amount of assignable hits and 158 total labor events that occurred within this case. As we can see this task was completed, which our model correctly predicted.
+%
+%\begin{lstlisting}[language=Python, caption=Case 1 - Feature input and 'completed\_task' ouptut.]
+%# ['task.monetary_reward_in_dollars', 'task.assignable_hits_count', 'total.labor.event_count']
+%case1 = [0.65, 0.0, 158]
+%case1Result = [1]
+%\end{lstlisting}
+%
+%\includegraphics[width=0.35\textwidth, center]{figures/case-1-model-prediction}
+%
+%\subsubsection{Case 2: High Assignable Hits Count}
+%We can see a high amount of assignable hits count offered, along with \$0.08 of monetary reward and 234 total labor events that occurred within this case. As we can see this task was completed, which our model correctly predicted.
+%
+%\begin{lstlisting}[language=Python, caption=Case 2 - Feature input and 'completed\_task' ouptut.]
+%# ['task.monetary_reward_in_dollars', 'task.assignable_hits_count', 'total.labor.event_count']
+%case1 = [0.08, 5083.0, 234]
+%case1Result = [1]
+%\end{lstlisting}
+%
+%\includegraphics[width=0.35\textwidth, center]{figures/case-2-model-prediction}
+%
+%\subsubsection{Case 3: High Total Labor Event Count}
+%We can see a high amount of total labor events occur, along with 0.0 amount of assignable hits and 705 total labor events. As we can see this task was not completed, which our model correctly predicted.
+%
+%\begin{lstlisting}[language=Python, caption=Case 3 - Feature input and 'completed\_task' ouptut.]
+%# ['task.monetary_reward_in_dollars', 'task.assignable_hits_count', 'total.labor.event_count']
+%case1 = [0.08, 0.0, 705]
+%case1Result = [0]
+%\end{lstlisting}
+%
+%\includegraphics[width=0.35\textwidth, center]{figures/case-3-model-prediction}
 
 \pagebreak
 

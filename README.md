@@ -8,7 +8,6 @@ The rise of AI technologies has created a vast amount of work for independent wo
 - David Croft <dcroft@g.clemson.edu>
 - Stephen Becker <sgbecke@g.clemson.edu>
 - Zachary Trabookis <ztraboo@clemson.edu>
-- Tony Hang <qhang@g.clemson.edu> (Chose to opt-out of project, did not participate in development or design)
 
 ## Installation
 Please make sure to download and put the following telemetry information in the `/data` directory. We've excluded commiting this data to source control because of the size of the data.
